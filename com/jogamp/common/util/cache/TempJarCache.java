@@ -210,7 +210,7 @@ public class TempJarCache {
      */
     public synchronized static final void addNativeLibs(Class<?> certClass, URL jarURL) throws IOException, SecurityException {        
         final LoadState nativeLibJarsLS = nativeLibJars.get(jarURL);
-        if( !testLoadState(nativeLibJarsLS, LoadState.LOOKED_UP) ) { 
+        if( true || !testLoadState(nativeLibJarsLS, LoadState.LOOKED_UP) ) { 
             nativeLibJars.put(jarURL, LoadState.LOOKED_UP);
             final JarFile jarFile = JarUtil.getJarFile(jarURL);
             if(DEBUG) {
