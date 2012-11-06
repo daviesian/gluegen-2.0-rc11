@@ -46,6 +46,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import com.jogamp.common.os.NativeLibrary;
+import com.jogamp.common.os.Platform;
 
 import jogamp.common.Debug;
 
@@ -473,7 +474,16 @@ public class JarUtil {
                 }
                 continue;
             }
-            
+			
+             if(isNativeLib && !entryName.contains("native/" + Platform.os_and_arch + "/"))
+            {
+              // This is a native library for another platform
+                if (DEBUG) {
+                    System.err.println("JarUtil: JarEntry : " + entryName + " native-lib is not for this platform. Skipping.");
+                }
+              continue;
+            }
+
             final boolean isClassFile = entryName.endsWith(".class");
             if(isClassFile && !extractClassFiles) {
                 if (DEBUG) {
@@ -501,41 +511,44 @@ public class JarUtil {
             }
             
             final File destFile = new File(dest, entryName);
-            if(isDir) {
-                if (DEBUG) {
-                    System.err.println("JarUtil: MKDIR: " + entryName + " -> " + destFile );
-                }
-                destFile.mkdir();
-            } else {
-                final File destFolder = new File(destFile.getParent());
-                if(!destFolder.exists()) {
-                    if (DEBUG) {
-                        System.err.println("JarUtil: MKDIR (parent): " + entryName + " -> " + destFolder );
-                    }                    
-                    destFolder.mkdir();
-                }
-                final InputStream in = new BufferedInputStream(jarFile.getInputStream(entry));
-                final OutputStream out = new BufferedOutputStream(new FileOutputStream(destFile));
-                int numBytes = -1; 
-                try {
-                    numBytes = IOUtil.copyStream2Stream(in, out, -1);
-                } finally {
-                    in.close();
-                    out.close();
-                }
-                boolean addedAsNativeLib = false;
-                if (numBytes>0) {
-                    num++;
-                    if (isNativeLib && ( isRootEntry || !nativeLibMap.containsKey(libBaseName) ) ) {                    
-                        nativeLibMap.put(libBaseName, destFile.getAbsolutePath());
-                        addedAsNativeLib = true;
-                    }
-                }
-                if (DEBUG) {
-                    System.err.println("JarUtil: EXTRACT["+num+"]: [" + libBaseName + " -> ] " + entryName + " -> " + destFile + ": "+numBytes+" bytes, addedAsNativeLib: "+addedAsNativeLib);
-                }
-            }
-        }
+			if (!destFile.exists()) {
+              if(isDir) {
+                  if (DEBUG) {
+                      System.err.println("JarUtil: MKDIR: " + entryName + " -> " + destFile );
+                  }
+                  destFile.mkdir();
+              } else {
+                  final File destFolder = new File(destFile.getParent());
+                  if(!destFolder.exists()) {
+                      if (DEBUG) {
+                          System.err.println("JarUtil: MKDIR (parent): " + entryName + " -> " + destFolder );
+                      }                    
+                      destFolder.mkdirs();
+                  }
+                  //System.out.println("Writing to " + destFile.toString());
+                  final InputStream in = new BufferedInputStream(jarFile.getInputStream(entry));
+                  final OutputStream out = new BufferedOutputStream(new FileOutputStream(destFile));
+                  int numBytes = -1; 
+                  try {
+                      numBytes = IOUtil.copyStream2Stream(in, out, -1);
+                  } finally {
+                      in.close();
+                      out.close();
+                  }
+                  boolean addedAsNativeLib = false;
+                  if (numBytes>0) {
+                      num++;
+                      if (isNativeLib && ( isRootEntry || !nativeLibMap.containsKey(libBaseName) ) ) {                    
+                          nativeLibMap.put(libBaseName, destFile.getAbsolutePath());
+                          addedAsNativeLib = true;
+                      }
+                  }
+                  if (DEBUG) {
+                      System.err.println("JarUtil: EXTRACT["+num+"]: [" + libBaseName + " -> ] " + entryName + " -> " + destFile + ": "+numBytes+" bytes, addedAsNativeLib: "+addedAsNativeLib);
+                  }
+              }
+           }
+		}
         return num;
     }
 

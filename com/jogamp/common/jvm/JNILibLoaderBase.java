@@ -146,23 +146,7 @@ public class JNILibLoaderBase {
   /* pp */ static final boolean addNativeJarLibsImpl(Class<?> classFromJavaJar, URL classJarURL, String nativeJarBasename, StringBuilder msg)
     throws IOException, IllegalArgumentException, SecurityException
   {
-    msg.setLength(0); // reset
-    msg.append("addNativeJarLibsImpl(classFromJavaJar ").append(classFromJavaJar).append(", classJarURL ").append(classJarURL).append(", nativeJarBaseName ").append(nativeJarBasename).append("): ");
-    boolean ok = false;
-    if(TempJarCache.isInitialized()) {        
-        final String nativeJarName = nativeJarBasename+"-natives-"+PlatformPropsImpl.os_and_arch+".jar";
-        msg.append(nativeJarName);
-        final URL jarUrlRoot = JarUtil.getURLDirname( JarUtil.getJarSubURL( classJarURL ) );
-        msg.append(" + ").append(jarUrlRoot);
-        final URL nativeJarURL = JarUtil.getJarFileURL(jarUrlRoot, nativeJarName);
-        msg.append(" -> ").append(nativeJarURL);
-        if(DEBUG) {
-            System.err.println(msg.toString());
-        }
-        TempJarCache.addNativeLibs(classFromJavaJar, nativeJarURL);
-        ok = true;
-    }
-    return ok;
+	return true;
   }
   
   /**
@@ -185,22 +169,7 @@ public class JNILibLoaderBase {
    * @return true if the native JAR file loaded successful or were loaded already, false in case of an error
    */
   public static final boolean addNativeJarLibs(Class<?> classFromJavaJar, String nativeJarBasename) {
-    if(TempJarCache.isInitialized()) {
-        final StringBuilder msg = new StringBuilder();
-        try {
-            final URL classJarURL = JarUtil.getJarURL(classFromJavaJar.getName(), classFromJavaJar.getClassLoader());
-            return addNativeJarLibsImpl(classFromJavaJar, classJarURL, nativeJarBasename, msg);
-        } catch (Exception e0) {
-            // IllegalArgumentException, IOException
-            System.err.println("Catched "+e0.getClass().getSimpleName()+": "+e0.getMessage()+", while "+msg.toString());
-            if(DEBUG) {
-                e0.printStackTrace();
-            }
-        }            
-    } else if(DEBUG) {
-        System.err.println("JNILibLoaderBase: addNativeJarLibs1: disabled due to uninitialized TempJarCache");
-    }
-    return false;
+    return true;
   }
    
   /**
